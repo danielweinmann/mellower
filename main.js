@@ -1,10 +1,10 @@
 import Expo from 'expo'
 import React, { Component } from 'react'
-import NewRecording from './app/screens/NewRecording'
+import NewRecordingContainer from './app/containers/NewRecordingContainer'
 
 class App extends Component {
   render() {
-    return (<NewRecording />)
+    return (<NewRecordingContainer />)
   }
 }
 

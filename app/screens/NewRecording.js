@@ -1,31 +1,24 @@
 import React from 'react'
-import { View, Text, Image, Dimensions } from 'react-native'
-import { Constants } from 'expo'
+import { View } from 'react-native'
 
 import Colors from "../Colors"
+import SimpleScreen from "../components/SimpleScreen"
+import FullView from "../components/FullView"
 import Sentence from "../components/Sentence"
+import RecordButton from "../components/RecordButton"
+import Tip from "../components/Tip"
 
-export default NewRecording = () => (
-  <View style={{
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: Colors.darkGray,
-    paddingTop: Constants.statusBarHeight + 40,
-  }}>
-    <Image
-      source={require('../../assets/images/logo.png')}
-      style={{
-        height: (178 / 900) * (Dimensions.get('window').width * 0.8), 
-        width: Dimensions.get('window').width * 0.8,
-        marginBottom: 30,
-      }}
-    />
-    <Sentence style={{
-      textAlign: 'center',
-      paddingHorizontal: 10,
-    }}>
-      Lear to sing in tune and share the path with fellow students
-    </Sentence>
-  </View>
+export default NewRecording = ({ onRecord, recording, tip }) => (
+  <SimpleScreen>
+    <FullView>
+      <RecordButton
+        onPress={onRecord}
+        recording={recording}
+      />
+    </FullView>
+    <View style={{height: 60}}>
+      { recording && <Sentence>Recording...</Sentence> }
+    </View>
+    <Tip>{tip}</Tip>
+  </SimpleScreen>
 )
