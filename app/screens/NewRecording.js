@@ -8,16 +8,17 @@ import Sentence from "../components/Sentence"
 import RecordButton from "../components/RecordButton"
 import Tip from "../components/Tip"
 
-export default NewRecording = ({ onRecord, recording, tip }) => (
+export default NewRecording = ({ isRecording, durationText, tip, onStartRecording, onStopRecording }) => (
   <SimpleScreen>
     <FullView>
       <RecordButton
-        onPress={onRecord}
-        recording={recording}
+        onStartRecording={onStartRecording}
+        onStopRecording={onStopRecording}
+        isRecording={isRecording}
       />
     </FullView>
     <View style={{height: 60}}>
-      { recording && <Sentence>Recording...</Sentence> }
+      <Sentence>{durationText}</Sentence>
     </View>
     <Tip>{tip}</Tip>
   </SimpleScreen>

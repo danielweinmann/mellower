@@ -1,48 +1,98 @@
 import React, { Component } from 'react'
 import { InteractionManager } from 'react-native'
 import { Permissions, Audio } from 'expo'
+
 import NewRecording from '../screens/NewRecording'
 
 export default class NewRecordingContainer extends Component {
-  state = {
-    recording: false,
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      isRecording: false,
+      sound: null,
+      duration: null,
+    }
+    this.recording = null
   }
 
-  async record() {
+  componentDidMount() {
+    Audio.setIsEnabledAsync(true)
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+      playsInSilentLockedModeIOS: true,
+      shouldDuckAndroid: false,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+    })
+  }
+
+  async startRecording() {
     const permission = await Permissions.askAsync(Permissions.AUDIO_RECORDING)
-    console.log("permission", permission)
     if (permission.status === 'granted') {
-      const recording = new Audio.Recording()
-      console.log("recording", recording)
-      const status = await recording.getStatusAsync()
-      console.log("status", status)
-      await recording.prepareToRecordAsync()
-      const newStatus = await recording.getStatusAsync()
-      console.log("status", newStatus)
-      // try {
-      //   await recording.prepareToRecordAsync()
-      //   await recording.startAsync()
-      //   // You are now recording!
-      // } catch (error) {
-      //   // An error occurred!
-      // }
+      this.recording = new Audio.Recording()
+      try {
+        let status = null
+        await this.recording.prepareToRecordAsync()
+        await this.recording.startAsync()
+        this.recording.setCallback(this.recordingStatus.bind(this))
+        this.setState(() => ({ isRecording: true }))
+      } catch (error) {
+        // An error occurred!
+      }
+    } else {
+      // You must allow recording ;)
     }
   }
 
-  toggleRecording() {
-    this.setState(({ recording }) => ({
-      recording: !recording,
+  async stopRecording() {
+    await this.recording.stopAndUnloadAsync()
+    const sound = this.recording.getNewSound()
+    await sound.loadAsync()
+    const status = await sound.getStatusAsync()
+    this.setState(() => ({
+      isRecording: false,
+      duration: status.durationMillis,
+      sound,
     }))
   }
 
-  handleRecord() {
+  recordingStatus(status) {
+    if (status.durationMillis) {
+      this.setState(() => ({ duration: status.durationMillis }))
+    }
+  }
+
+  durationText(milliseconds) {
+    if (milliseconds === null) {
+      return null
+    }
+    const totalSeconds = milliseconds / 1000
+    const seconds = Math.floor(totalSeconds % 60)
+    const minutes = Math.floor(totalSeconds / 60)
+    const padWithZero = number => {
+      const string = number.toString()
+      if (number < 10) {
+        return '0' + string
+      }
+      return string
+    }
+    return padWithZero(minutes) + ':' + padWithZero(seconds)
+  }
+
+  handleStartRecording() {
     InteractionManager.runAfterInteractions(() => {
-      this.record()
+      this.startRecording()
+    })
+  }
+
+  handleStopRecording() {
+    InteractionManager.runAfterInteractions(() => {
+      this.stopRecording()
     })
   }
 
   render() {
-    const { recording } = this.state
+    const { recording, duration } = this.state
     const tip = (
       recording ? 
         "Don't sing runs, riffs, trills or anything fast. We'll only consider simple notes for now." :
@@ -53,7 +103,9 @@ export default class NewRecordingContainer extends Component {
         {...this.props}
         {...this.state}
         tip={tip}
-        onRecord={this.handleRecord.bind(this)}
+        durationText={this.durationText(duration)}
+        onStartRecording={this.handleStartRecording.bind(this)}
+        onStopRecording={this.handleStopRecording.bind(this)}
       />
     )
   }
