@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { InteractionManager } from 'react-native'
+import { InteractionManager, Alert } from 'react-native'
 import { Permissions, Audio } from 'expo'
 
 import NewRecording from '../screens/NewRecording'
@@ -37,10 +37,10 @@ export default class NewRecordingContainer extends Component {
         this.recording.setCallback(this.recordingStatus.bind(this))
         this.setState(() => ({ isRecording: true }))
       } catch (error) {
-        // An error occurred!
+        Alert.alert(null, 'Ooops! There was an error while recording your audio.', [{text: 'OK'}])
       }
     } else {
-      // You must allow recording ;)
+      Alert.alert(null, 'Hey, you will need to give us permission if you want to record audio 😉', [{text: 'OK'}])
     }
   }
 
