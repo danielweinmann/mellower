@@ -3,6 +3,7 @@ import { InteractionManager, Alert } from 'react-native'
 import { Permissions, Audio } from 'expo'
 
 import NewRecording from '../screens/NewRecording'
+import ViewRecording from '../screens/ViewRecording'
 
 export default class NewRecordingContainer extends Component {
   constructor(props, context) {
@@ -11,6 +12,7 @@ export default class NewRecordingContainer extends Component {
       isRecording: false,
       sound: null,
       duration: null,
+      melody: null,
     }
     this.recording = null
   }
@@ -64,7 +66,7 @@ export default class NewRecordingContainer extends Component {
     }
   }
 
-  async uploadRecording(uri) {
+  uploadRecording(uri) {
     const file = {
       uri,
       type: 'audio/x-caf',
@@ -72,12 +74,24 @@ export default class NewRecordingContainer extends Component {
     }
     let body = new FormData()
     body.append('file', file)
-    const response = await fetch('https://melodyparser.herokuapp.com/', {
+    fetch('http://localhost:8080/', {
       method: 'post',
       headers: { 'Content-Type': 'multipart/form-data' },
       body,
     })
-    const melody = await response.json()
+    .then(response => {
+      if (response.ok) {
+        response.json().then(json => {
+          this.setState(() => ({ melody: json}))
+        })
+      } else {
+        Alert.alert(null, 'Ooops! There was an error while uploading your audio.', [{text: 'OK'}])
+      }
+      return response
+    })
+    .catch(error => {
+      Alert.alert(null, 'Ooops! There was an error while uploading your audio.', [{text: 'OK'}])
+    })
   }
 
   durationText(milliseconds) {
@@ -110,12 +124,15 @@ export default class NewRecordingContainer extends Component {
   }
 
   render() {
-    const { recording, duration } = this.state
+    const { recording, duration, melody } = this.state
     const tip = (
       recording ? 
         "Don't sing runs, riffs, trills or anything fast. We'll only consider simple notes for now." :
         "Sing a line or a phrase of a song and we'll show you your intonation note by note."
       )
+    if (melody) {
+      return (<ViewRecording {...this.props} {...this.state} />)
+    }
     return (
       <NewRecording
         {...this.props}
