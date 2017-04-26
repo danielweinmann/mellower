@@ -34,7 +34,7 @@ export default class NewRecordingContainer extends Component {
         let status = null
         await this.recording.prepareToRecordAsync()
         await this.recording.startAsync()
-        this.recording.setCallback(this.recordingStatus.bind(this))
+        this.recording.setCallback(this.updateRecordingStatus.bind(this))
         this.setState(() => ({ isRecording: true }))
       } catch (error) {
         Alert.alert(null, 'Ooops! There was an error while recording your audio.', [{text: 'OK'}])
@@ -46,6 +46,7 @@ export default class NewRecordingContainer extends Component {
 
   async stopRecording() {
     await this.recording.stopAndUnloadAsync()
+    const uri = this.recording.getURI()
     const sound = this.recording.getNewSound()
     await sound.loadAsync()
     const status = await sound.getStatusAsync()
@@ -54,12 +55,29 @@ export default class NewRecordingContainer extends Component {
       duration: status.durationMillis,
       sound,
     }))
+    this.uploadRecording(uri)
   }
 
-  recordingStatus(status) {
+  updateRecordingStatus(status) {
     if (status.durationMillis) {
       this.setState(() => ({ duration: status.durationMillis }))
     }
+  }
+
+  async uploadRecording(uri) {
+    const file = {
+      uri,
+      type: 'audio/x-caf',
+      name: 'recording.caf',
+    }
+    let body = new FormData()
+    body.append('file', file)
+    const response = await fetch('https://melodyparser.herokuapp.com/', {
+      method: 'post',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      body,
+    })
+    const melody = await response.json()
   }
 
   durationText(milliseconds) {
