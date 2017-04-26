@@ -1,8 +1,16 @@
 export default Colors = {
-  yellow: '#FFCC00',
   darkGray: '#333333',
   gray: '#999999',
   lightGray: '#CCCCCC',
   white: '#FFFFFF',
+  yellow: '#FFCC00',
   red: '#CC0000',
+  green: '#00CC00',
+  orange: '#FF6600',
+  darkRed: '#990000',
+  darkGreen: '#006600',
+  darkOrange: '#DD4400',
+  lightRed: '#AA0000',
+  lightGreen: '#00AA00',
+  lightOrange: '#FF8800',
 }
